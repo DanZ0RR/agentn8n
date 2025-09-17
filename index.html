@@ -207,13 +207,19 @@
             const chatContainer = document.getElementById('chat-container');
             const userInput = document.getElementById('user-input');
             const sendBtn = document.getElementById('send-btn');
-            const apiUrl = 'YOUR_N8N_WEBHOOK_URL_HERE'; // Replace with your n8n webhook URL
 
-            // Function to add a message to the chat
-            function addMessage(text, sender) {
+            // Replace these with your actual endpoints/links
+            // NOTE: A Microsoft Teams deep link (the URL you provided) is not a server webhook endpoint
+            // and will not accept a POST request from the browser. We'll attempt a POST and provide
+            // a clear fallback that opens the Teams deep link in a new tab and copies the link.
+            const n8nWebhook = 'http://localhost:5678/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
+            const teamsDeepLink = n8nWebhook; // fallback link (local n8n webhook)
+
+            // Utility: add a message to the chat
+            function addMessage(text, sender, extraHtml) {
                 const messageWrapper = document.createElement('div');
                 messageWrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start items-start space-x-4'}`;
-                
+
                 if (sender === 'ai') {
                     const aiAvatar = document.createElement('div');
                     aiAvatar.className = "w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs";
@@ -230,11 +236,14 @@
                     aiName.textContent = "AnyChat";
                     messageContent.appendChild(aiName);
                 }
-                
+
                 const messageBubble = document.createElement('div');
                 messageBubble.className = `p-5 shadow-sm ${sender === 'user' ? 'user-message' : 'ai-message'}`;
-                
-                if (text.startsWith('[Image')) {
+
+                // allow HTML for extra content (buttons etc.) when provided
+                if (extraHtml) {
+                    messageBubble.appendChild(extraHtml);
+                } else if (text.startsWith('[Image')) {
                     const img = document.createElement('img');
                     img.src = "https://placehold.co/400x300/e5e7eb/4b5563?text=Generated+Image";
                     img.alt = "Generated Image";
@@ -243,26 +252,23 @@
                 } else {
                     messageBubble.textContent = text;
                 }
-                
+
                 messageContent.appendChild(messageBubble);
 
                 if (sender === 'ai') {
-                    // Placeholder for a regenerate button
                     const regenerateButton = document.createElement('button');
                     regenerateButton.className = "mt-2 flex items-center space-x-2 text-gray-500 hover:text-blue-600 font-medium transition-colors duration-200";
-                    regenerateButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg><span>Regenerate response</span>`;
-                    regenerateButton.onclick = () => { /* Add regenerate logic here */ };
+                    regenerateButton.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\" /></svg><span>Regenerate response</span>`;
+                    regenerateButton.onclick = () => { /* optional: add regenerate */ };
                     messageContent.appendChild(regenerateButton);
                 }
 
                 messageWrapper.appendChild(messageContent);
                 chatContainer.appendChild(messageWrapper);
-
-                // Scroll to the bottom of the chat window
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
 
-            // Function to simulate AI typing
+            // Typing indicator
             function showTypingIndicator() {
                 const typingWrapper = document.createElement('div');
                 typingWrapper.id = 'typing-indicator';
@@ -276,60 +282,92 @@
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
 
-            // Function to remove the typing indicator
             function hideTypingIndicator() {
                 const typingIndicator = document.getElementById('typing-indicator');
-                if (typingIndicator) {
-                    typingIndicator.remove();
+                if (typingIndicator) typingIndicator.remove();
+            }
+
+            // Open Teams deep link (fallback). Also attempt to copy full link+message to clipboard.
+            function openTeamsLinkWithMessage(message) {
+                const connector = teamsDeepLink.includes('?') ? '&' : '?';
+                const url = `${teamsDeepLink}${connector}message=${encodeURIComponent(message)}`;
+                // open in a new tab/window
+                window.open(url, '_blank');
+                // try copy to clipboard so user can paste if needed
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url).catch(() => {});
                 }
             }
-            
+
+            // Send message: try POST to n8n webhook, then show response or fallback
             async function sendMessage() {
                 const message = userInput.value.trim();
-                if (message === '') return;
-                
-                // Add user message to the chat
+                if (!message) return;
+
                 addMessage(message, 'user');
                 userInput.value = '';
-
-                // Show typing indicator
                 showTypingIndicator();
 
-                try {
-                    // This is where you would connect to your AI agent
-                    // const response = await fetch(apiUrl, {
-                    //     method: 'POST',
-                    //     headers: {
-                    //         'Content-Type': 'application/json'
-                    //     },
-                    //     body: JSON.stringify({ message: message })
-                    // });
-                    
-                    // The following is a placeholder for the AI response
-                    const aiResponseText = `I have received your message: "${message}". In a real app, I would now be processing this with my AI agent.`;
-                    
-                    // Simulate a delay for the AI response
-                    setTimeout(() => {
-                        hideTypingIndicator();
-                        addMessage(aiResponseText, 'ai');
-                    }, 1500);
+                // Abort after timeout to avoid hanging
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000);
 
-                } catch (error) {
-                    console.error('Error sending message:', error);
+                try {
+                    const res = await fetch(n8nWebhook, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message }),
+                        signal: controller.signal,
+                    });
+
+                    clearTimeout(timeout);
+
+                    if (!res.ok) {
+                        // Non-2xx from server. Show fallback and server error text if present.
+                        const text = await res.text().catch(() => '');
+                        hideTypingIndicator();
+                        const container = document.createElement('div');
+                        container.innerHTML = `<div class=\"mb-2\">Could not deliver via webhook (status ${res.status}).</div>`;
+                        const openBtn = document.createElement('button');
+                        openBtn.className = 'px-3 py-2 bg-blue-600 text-white rounded-full';
+                        openBtn.textContent = 'Open in Teams';
+                        openBtn.onclick = () => openTeamsLinkWithMessage(message);
+                        container.appendChild(openBtn);
+                        addMessage(text || 'Webhook returned an error. Use Teams fallback below.', 'ai', container);
+                        return;
+                    }
+
+                    // Try to parse JSON response with an expected { reply: '...' } or { message: '...' }
+                    let data;
+                    try { data = await res.json(); } catch { data = null; }
                     hideTypingIndicator();
-                    addMessage('I am sorry, but an error occurred while processing your request. Please try again.', 'ai');
+
+                    if (data && (data.reply || data.message || data.text)) {
+                        const reply = data.reply || data.message || data.text;
+                        addMessage(String(reply), 'ai');
+                    } else {
+                        // If webhook doesn't return structured response, show a success acknowledgement.
+                        addMessage('Message delivered to webhook (no reply returned).', 'ai');
+                    }
+
+                } catch (err) {
+                    clearTimeout(timeout);
+                    hideTypingIndicator();
+                    // Likely a network/CORS or abort error. Offer the Teams fallback.
+                    console.error('Send error:', err);
+                    const fallbackContainer = document.createElement('div');
+                    fallbackContainer.innerHTML = `<div class=\"mb-2\">Unable to POST to the webhook from this page (this is common when the endpoint does not allow cross-origin requests). You can open the Teams link to continue the conversation manually.</div>`;
+                    const openBtn = document.createElement('button');
+                    openBtn.className = 'px-3 py-2 bg-blue-600 text-white rounded-full';
+                    openBtn.textContent = 'Open in Teams';
+                    openBtn.onclick = () => openTeamsLinkWithMessage(message);
+                    fallbackContainer.appendChild(openBtn);
+                    addMessage('Webhook delivery failed — use fallback below.', 'ai', fallbackContainer);
                 }
             }
 
-            // Event listener for the send button
             sendBtn.addEventListener('click', sendMessage);
-
-            // Event listener for the Enter key on the input field
-            userInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
         });
     </script>
 </body>
