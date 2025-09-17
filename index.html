@@ -202,6 +202,9 @@
 
     </div>
 
+    <!-- n8n Chat embed target -->
+    <div id="n8n-chat" style="position:fixed;right:24px;bottom:24px;z-index:60;"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const chatContainer = document.getElementById('chat-container');
@@ -368,6 +371,21 @@
 
             sendBtn.addEventListener('click', sendMessage);
             userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        });
+    </script>
+
+    <!-- n8n Chat CDN embed -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        // Initialize the n8n embeddable chat widget. It will POST to the webhook URL.
+        createChat({
+            webhookUrl: 'https://zhijianchencr.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat',
+            target: '#n8n-chat',
+            mode: 'window',
+            showWelcomeScreen: true,
+            enableStreaming: false
         });
     </script>
 </body>
