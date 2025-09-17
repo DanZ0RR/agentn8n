@@ -212,8 +212,10 @@
             // NOTE: A Microsoft Teams deep link (the URL you provided) is not a server webhook endpoint
             // and will not accept a POST request from the browser. We'll attempt a POST and provide
             // a clear fallback that opens the Teams deep link in a new tab and copies the link.
-            const n8nWebhook = 'http://localhost:5678/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
-            const teamsDeepLink = n8nWebhook; // fallback link (local n8n webhook)
+            // The client will POST to the local proxy endpoint which adds CORS headers
+            const n8nWebhook = '/api/send';
+            // For reference the real n8n webhook path the proxy forwards to:
+            const n8nRaw = 'http://localhost:5678/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
 
             // Utility: add a message to the chat
             function addMessage(text, sender, extraHtml) {
