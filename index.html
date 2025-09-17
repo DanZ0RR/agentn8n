@@ -215,7 +215,7 @@
             // The client will POST to the local proxy endpoint which adds CORS headers
             const n8nWebhook = '/api/send';
             // For reference the real n8n webhook path the proxy forwards to:
-            const n8nRaw = 'http://localhost:5678/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
+            const n8nRaw = 'https://zhijianchencr.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
 
             // Utility: add a message to the chat
             function addMessage(text, sender, extraHtml) {
@@ -289,13 +289,11 @@
                 if (typingIndicator) typingIndicator.remove();
             }
 
-            // Open Teams deep link (fallback). Also attempt to copy full link+message to clipboard.
-            function openTeamsLinkWithMessage(message) {
-                const connector = teamsDeepLink.includes('?') ? '&' : '?';
-                const url = `${teamsDeepLink}${connector}message=${encodeURIComponent(message)}`;
-                // open in a new tab/window
+            // Open webhook URL in a new tab and copy the link+message for manual delivery.
+            function openWebhookWithMessage(message) {
+                const connector = n8nRaw.includes('?') ? '&' : '?';
+                const url = `${n8nRaw}${connector}message=${encodeURIComponent(message)}`;
                 window.open(url, '_blank');
-                // try copy to clipboard so user can paste if needed
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(url).catch(() => {});
                 }
@@ -332,8 +330,8 @@
                         container.innerHTML = `<div class=\"mb-2\">Could not deliver via webhook (status ${res.status}).</div>`;
                         const openBtn = document.createElement('button');
                         openBtn.className = 'px-3 py-2 bg-blue-600 text-white rounded-full';
-                        openBtn.textContent = 'Open in Teams';
-                        openBtn.onclick = () => openTeamsLinkWithMessage(message);
+                        openBtn.textContent = 'Open webhook';
+                        openBtn.onclick = () => openWebhookWithMessage(message);
                         container.appendChild(openBtn);
                         addMessage(text || 'Webhook returned an error. Use Teams fallback below.', 'ai', container);
                         return;
@@ -361,8 +359,8 @@
                     fallbackContainer.innerHTML = `<div class=\"mb-2\">Unable to POST to the webhook from this page (this is common when the endpoint does not allow cross-origin requests). You can open the Teams link to continue the conversation manually.</div>`;
                     const openBtn = document.createElement('button');
                     openBtn.className = 'px-3 py-2 bg-blue-600 text-white rounded-full';
-                    openBtn.textContent = 'Open in Teams';
-                    openBtn.onclick = () => openTeamsLinkWithMessage(message);
+                    openBtn.textContent = 'Open webhook';
+                    openBtn.onclick = () => openWebhookWithMessage(message);
                     fallbackContainer.appendChild(openBtn);
                     addMessage('Webhook delivery failed — use fallback below.', 'ai', fallbackContainer);
                 }

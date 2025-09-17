@@ -6,7 +6,8 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 // Base URL for n8n (protocol + host + optional port)
-const N8N_URL = process.env.N8N_URL || 'http://localhost:5678';
+// Default to your n8n cloud host; can be overridden with N8N_URL env var
+const N8N_URL = process.env.N8N_URL || 'https://zhijianchencr.app.n8n.cloud';
 // Path for your webhook (can be overridden with env N8N_WEBHOOK_PATH)
 const N8N_WEBHOOK_PATH = process.env.N8N_WEBHOOK_PATH || '/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat';
 
