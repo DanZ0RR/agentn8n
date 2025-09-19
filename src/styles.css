@@ -1,7 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Add any custom styles below */
-/* Note: removed `@apply bg-gray-100` to avoid PostCSS @apply expansion errors in the programmatic build.
-	If you want body to have that background, add `class="bg-gray-100"` to your <body> in HTML. */

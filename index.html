@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Assistant</title>
-    <!-- Use locally built Tailwind CSS -->
-    <link href="./dist/styles.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <!-- Use Tailwind CSS for a modern and responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
@@ -87,6 +86,8 @@
             60%, 100% { box-shadow: 10014px 0 0 -5px; }
         }
     </style>
+    <!-- n8n chat widget styles -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 md:p-8">
 
@@ -334,7 +335,7 @@
         });
     </script>
 
-    <!-- Add n8n chat init after your page scripts -->
+    <!-- n8n chat widget init -->
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
