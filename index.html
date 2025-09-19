@@ -1,347 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Assistant</title>
-    <!-- Use Tailwind CSS for a modern and responsive design -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom scrollbar for the chat window and sidebar */
-        .scroll-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .scroll-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .scroll-container::-webkit-scrollbar-thumb {
-            background-color: #d1d5db;
-            border-radius: 10px;
-        }
-        .scroll-container::-webkit-scrollbar-thumb:hover {
-            background-color: #9ca3af;
-        }
-        /* Style for the user and AI bubbles */
-        .user-message {
-            background-color: #e5e7eb; /* Soft gray for user */
-            color: #1f2937;
-            border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
-        }
-        .ai-message {
-            background-color: #dbeafe; /* Light blue for AI */
-            color: #1e40af;
-            border-radius: 1.5rem 1.5rem 1.5rem 0.5rem;
-        }
-        /* Typing animation */
-        .dot-pulse {
-            position: relative;
-            left: -9999px;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: #9ca3af;
-            color: #9ca3af;
-            box-shadow: 9999px 0 0 -5px;
-            animation: dot-pulse 1.5s infinite linear;
-            animation-delay: 0.25s;
-        }
-        .dot-pulse::before, .dot-pulse::after {
-            content: "";
-            display: inline-block;
-            position: absolute;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: #9ca3af;
-            color: #9ca3af;
-        }
-        .dot-pulse::before {
-            box-shadow: 9984px 0 0 -5px;
-            animation: dot-pulse-before 1.5s infinite linear;
-            animation-delay: 0s;
-        }
-        .dot-pulse::after {
-            box-shadow: 10014px 0 0 -5px;
-            animation: dot-pulse-after 1.5s infinite linear;
-            animation-delay: 0.5s;
-        }
-        @keyframes dot-pulse {
-            0% { box-shadow: 9999px 0 0 -5px; }
-            30% { box-shadow: 9999px 0 0 2px; }
-            60%, 100% { box-shadow: 9999px 0 0 -5px; }
-        }
-        @keyframes dot-pulse-before {
-            0% { box-shadow: 9984px 0 0 -5px; }
-            30% { box-shadow: 9984px 0 0 2px; }
-            60%, 100% { box-shadow: 9984px 0 0 -5px; }
-        }
-        @keyframes dot-pulse-after {
-            0% { box-shadow: 10014px 0 0 -5px; }
-            30% { box-shadow: 10014px 0 0 2px; }
-            60%, 100% { box-shadow: 10014px 0 0 -5px; }
-        }
-    </style>
-    <!-- n8n chat widget styles -->
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <title>Funny AI Agent Chat</title>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    color: #333;
+  }
+
+  h3 {
+    color: #2c3e50;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  #chat {
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background: #fff;
+    padding: 15px;
+    width: 380px;
+    height: 480px;
+    overflow-y: auto;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .msg {
+    margin: 10px 0;
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: 75%;
+    line-height: 1.4;
+    font-size: 15px;
+    word-wrap: break-word;
+    display: inline-block;
+    clear: both;
+    position: relative;
+    animation: fadeIn 0.25s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .user {
+    background: #007bff;
+    color: white;
+    float: right;
+    border-bottom-right-radius: 0;
+    font-weight: 500;
+  }
+
+  .bot {
+    background: #f3f4f6;
+    color: #222;
+    float: left;
+    border-bottom-left-radius: 0;
+  }
+
+  .typing {
+    font-style: italic;
+    font-size: 14px;
+    color: #888;
+    margin: 5px 0;
+    float: left;
+  }
+
+  #controls {
+    margin-top: 12px;
+    width: 380px;
+    display: flex;
+    gap: 8px;
+  }
+
+  #msgInput {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 22px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+    transition: border 0.2s ease;
+  }
+
+  #msgInput:focus {
+    border-color: #007bff;
+  }
+
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 22px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+</style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 md:p-8">
 
-    <!-- Main Container -->
-    <div class="bg-white rounded-[2rem] shadow-2xl flex flex-col md:flex-row w-full max-w-7xl h-[calc(100vh-2rem)] md:h-[90vh] overflow-hidden">
+<body>
+  <h3>🤖 Funny AI Agent Chat</h3>
+  <div id="chat"></div>
 
-        <!-- Sidebar (Left Column) -->
-        <aside class="w-full md:w-80 bg-gray-100 text-gray-800 flex-shrink-0 flex flex-col p-6 rounded-t-[2rem] md:rounded-l-[2rem] md:rounded-tr-none border-b md:border-b-0 md:border-r border-gray-200">
-            <div class="flex items-center space-x-3 mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                </svg>
-                <span class="text-2xl font-semibold text-gray-800">AnyChat</span>
-            </div>
+  <div id="controls">
+    <input type="text" id="msgInput" placeholder="Type something witty...">
+    <button onclick="sendMessage()">🚀</button>
+  </div>
 
-            <button class="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-4 py-3 rounded-full font-medium mb-6 shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                </svg>
-                <span>New chat</span>
-            </button>
+  <script>
+    const CHAT_URL = "https://zhijianchencr.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat";
 
-            <div class="flex-grow scroll-container overflow-y-auto pr-2 hidden md:block">
-                <div class="mb-6">
-                    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-2">Today</h2>
-                    <ul>
-                        <li class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M21.2 5.2a1 1 0 0 0-.7-.2c-3.1 0-5.8 2.2-6.5 5.3L13.1 11H9.8c-.8 0-1.5.3-2 1a2.8 2.8 0 0 0 0 3.7l1.7 1.7a2.8 2.8 0 0 0 3.7 0l1.7-1.7a2.8 2.8 0 0 0 .1-3.7l-.4-.5c.8-.1 1.6-.2 2.5-.2h2.5a.5.5 0 0 0 .5-.5V10.7a.5.5 0 0 0-.5-.5H18.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5H21a.5.5 0 0 0 .5-.5v-4.5a.5.5 0 0 0-.3-.5zM12 16.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                            </svg>
-                            <span class="text-gray-800">Helpful AI Ready</span>
-                        </li>
-                        <li class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/>
-                            </svg>
-                            <span class="text-gray-800">Photo Generation</span>
-                        </li>
-                    </ul>
-                </div>
+    // Persistent sessionId
+    let sessionId = localStorage.getItem("chatSessionId");
+    if (!sessionId) {
+      sessionId = "user-" + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem("chatSessionId", sessionId);
+    }
 
-                <div>
-                    <h2 class="text-sm font-semibold text-gray-500 uppercase mb-2">Previous 7 days</h2>
-                    <ul>
-                        <li class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/>
-                            </svg>
-                            <span class="text-gray-800">Web Design Workflow</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+    const funEmojis = ["😂", "🔥", "✨", "🤯", "🥳", "🍕", "☕"];
 
-            <!-- User Profile & Upgrade -->
-            <div class="mt-auto pt-6 border-t border-gray-200 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-xl font-bold text-white">E</div>
-                    <span class="text-lg font-medium text-gray-800">Emily</span>
-                </div>
-                <button class="text-xs px-3 py-1 bg-green-500 hover:bg-green-600 rounded-full font-semibold text-white">
-                    Upgrade
-                </button>
-            </div>
-        </aside>
+    function getRandomEmoji() {
+      return funEmojis[Math.floor(Math.random() * funEmojis.length)];
+    }
 
-        <!-- Main Chat Area (Right Column) -->
-        <main class="flex flex-col flex-grow p-6">
-            <!-- Header for Main Chat Area -->
-            <header class="flex items-center justify-between pb-6 mb-2">
-                <h2 class="text-xl font-semibold text-gray-800">Photo Generation</h2>
-                <div class="flex items-center space-x-4 text-gray-500">
-                    <button class="hover:text-blue-600 transition-colors duration-200" title="Plugins">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                        </svg>
-                    </button>
-                    <button class="hover:text-blue-600 transition-colors duration-200" title="History">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-                        </svg>
-                    </button>
-                </div>
-            </header>
+    async function sendMessage() {
+      const input = document.getElementById("msgInput");
+      const chat = document.getElementById("chat");
+      const userMsg = input.value.trim();
+      if (!userMsg) return;
 
-            <!-- Chat Window -->
-            <div id="chat-container" class="scroll-container flex-grow py-6 overflow-y-auto space-y-6">
-                <!-- Message will be dynamically added here by JavaScript -->
-                <div class="flex justify-start items-start space-x-4">
-                     <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs">AI</div>
-                     <div class="flex flex-col space-y-2 max-w-[80%]">
-                        <span class="text-sm font-semibold text-gray-800">AnyChat</span>
-                        <div class="ai-message p-5 shadow-sm">
-                            Hello! How can I help you today?
-                        </div>
-                     </div>
-                </div>
-            </div>
+      // Add user message
+      chat.innerHTML += `<div class="msg user">🧑 ${userMsg}</div><div style="clear:both"></div>`;
+      input.value = "";
+      chat.scrollTop = chat.scrollHeight;
 
-            <!-- Input Area -->
-            <div class="pt-6 border-t border-gray-200 bg-white">
-                <div class="relative flex items-center">
-                    <input type="text" id="user-input" placeholder="Send your message"
-                           class="w-full pl-6 pr-14 py-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200 text-gray-800 text-lg">
-                    <button id="send-btn" class="absolute right-3 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </main>
+      // Show typing indicator
+      const typingEl = document.createElement("div");
+      typingEl.className = "typing";
+      typingEl.innerText = "🤖 is typing...";
+      chat.appendChild(typingEl);
+      chat.scrollTop = chat.scrollHeight;
 
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const chatContainer = document.getElementById('chat-container');
-            const userInput = document.getElementById('user-input');
-            const sendBtn = document.getElementById('send-btn');
-            const apiUrl = 'YOUR_N8N_WEBHOOK_URL_HERE'; // Replace with your n8n webhook URL
-
-            // Function to add a message to the chat
-            function addMessage(text, sender) {
-                const messageWrapper = document.createElement('div');
-                messageWrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start items-start space-x-4'}`;
-                
-                if (sender === 'ai') {
-                    const aiAvatar = document.createElement('div');
-                    aiAvatar.className = "w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white text-xs";
-                    aiAvatar.textContent = "AI";
-                    messageWrapper.appendChild(aiAvatar);
-                }
-
-                const messageContent = document.createElement('div');
-                messageContent.className = "flex flex-col space-y-2 max-w-[80%]";
-
-                if (sender === 'ai') {
-                    const aiName = document.createElement('span');
-                    aiName.className = "text-sm font-semibold text-gray-800";
-                    aiName.textContent = "AnyChat";
-                    messageContent.appendChild(aiName);
-                }
-                
-                const messageBubble = document.createElement('div');
-                messageBubble.className = `p-5 shadow-sm ${sender === 'user' ? 'user-message' : 'ai-message'}`;
-                
-                if (text.startsWith('[Image')) {
-                    const img = document.createElement('img');
-                    img.src = "https://placehold.co/400x300/e5e7eb/4b5563?text=Generated+Image";
-                    img.alt = "Generated Image";
-                    img.className = "rounded-lg max-w-full h-auto";
-                    messageBubble.appendChild(img);
-                } else {
-                    messageBubble.textContent = text;
-                }
-                
-                messageContent.appendChild(messageBubble);
-
-                if (sender === 'ai') {
-                    // Placeholder for a regenerate button
-                    const regenerateButton = document.createElement('button');
-                    regenerateButton.className = "mt-2 flex items-center space-x-2 text-gray-500 hover:text-blue-600 font-medium transition-colors duration-200";
-                    regenerateButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg><span>Regenerate response</span>`;
-                    regenerateButton.onclick = () => { /* Add regenerate logic here */ };
-                    messageContent.appendChild(regenerateButton);
-                }
-
-                messageWrapper.appendChild(messageContent);
-                chatContainer.appendChild(messageWrapper);
-
-                // Scroll to the bottom of the chat window
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-
-            // Function to simulate AI typing
-            function showTypingIndicator() {
-                const typingWrapper = document.createElement('div');
-                typingWrapper.id = 'typing-indicator';
-                typingWrapper.className = 'flex justify-start items-center p-2 space-x-2';
-                typingWrapper.innerHTML = `
-                    <div class="ai-message p-5 shadow-sm">
-                        <div class="dot-pulse"></div>
-                    </div>
-                `;
-                chatContainer.appendChild(typingWrapper);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-
-            // Function to remove the typing indicator
-            function hideTypingIndicator() {
-                const typingIndicator = document.getElementById('typing-indicator');
-                if (typingIndicator) {
-                    typingIndicator.remove();
-                }
-            }
-            
-            async function sendMessage() {
-                const message = userInput.value.trim();
-                if (message === '') return;
-                
-                // Add user message to the chat
-                addMessage(message, 'user');
-                userInput.value = '';
-
-                // Show typing indicator
-                showTypingIndicator();
-
-                try {
-                    // This is where you would connect to your AI agent
-                    // const response = await fetch(apiUrl, {
-                    //     method: 'POST',
-                    //     headers: {
-                    //         'Content-Type': 'application/json'
-                    //     },
-                    //     body: JSON.stringify({ message: message })
-                    // });
-                    
-                    // The following is a placeholder for the AI response
-                    const aiResponseText = `I have received your message: "${message}". In a real app, I would now be processing this with my AI agent.`;
-                    
-                    // Simulate a delay for the AI response
-                    setTimeout(() => {
-                        hideTypingIndicator();
-                        addMessage(aiResponseText, 'ai');
-                    }, 1500);
-
-                } catch (error) {
-                    console.error('Error sending message:', error);
-                    hideTypingIndicator();
-                    addMessage('I am sorry, but an error occurred while processing your request. Please try again.', 'ai');
-                }
-            }
-
-            // Event listener for the send button
-            sendBtn.addEventListener('click', sendMessage);
-
-            // Event listener for the Enter key on the input field
-            userInput.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+      try {
+        const res = await fetch(CHAT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chatInput: userMsg,
+            sessionId: sessionId
+          })
         });
-    </script>
 
-    <!-- n8n chat widget init -->
-    <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        const data = await res.json();
+        console.log("n8n raw response:", data);
 
-        createChat({
-            webhookUrl: 'https://zhijianchencr.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat'
-        });
-    </script>
+        let botReply =
+          data.text ||
+          data.message ||
+          data.output ||
+          (typeof data === "string" ? data : JSON.stringify(data));
+
+        // Remove typing indicator
+        chat.removeChild(typingEl);
+
+        // Add bot reply
+        chat.innerHTML += `<div class="msg bot">🤖 ${botReply} ${getRandomEmoji()}</div><div style="clear:both"></div>`;
+        chat.scrollTop = chat.scrollHeight;
+      } catch (err) {
+        chat.removeChild(typingEl);
+        chat.innerHTML += `<div class="msg bot">🤖 Uh oh... error talking to the brain 😅</div>`;
+      }
+    }
+  </script>
 </body>
-</html>
+
+</html> 
