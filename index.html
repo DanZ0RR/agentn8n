@@ -3,52 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaAI Chat</title>
+    <title>NovaAI Agent Chat</title>
     <style>
+        /*
+         * Global Styles & Inter Font
+         */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        /* Dynamic Orange/White Background */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            /* Dynamic background using a large gradient that moves */
+            background: linear-gradient(-45deg, #ffffff, #fff7e6, #ffedd5); 
+            background-size: 400% 400%;
+            animation: colorFlow 15s ease infinite;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             padding: 1rem;
         }
+        
+        @keyframes colorFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /*
+         * Main Container - GLASSMORPHISM BASE
+         */
         .main-container {
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.6); /* Translucent white */
+            backdrop-filter: blur(25px); /* The key glass effect */
+            -webkit-backdrop-filter: blur(25px); /* Safari support */
             border-radius: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            display: flex;
-            flex-direction: column;
+            /* Subtle shadow and a light inner border for the glass reflection look */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5); 
             width: 100%;
             max-width: 84rem;
             height: calc(100vh - 2rem);
             max-height: 90vh;
             overflow: hidden;
+            position: relative; /* For absolute positioning of home/chat views */
         }
-        @media (min-width: 768px) {
-            .main-container {
-                flex-direction: row;
+        
+        /*
+         * Home Page Styles
+         */
+        #homepage-container {
+            padding: 3rem 1rem;
+            display: none; /* Managed by router */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+        }
+        .home-header {
+            margin-bottom: 3rem;
+        }
+        .home-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .home-header p {
+            font-size: 1.125rem;
+            color: #4b5563; /* Slightly darker for contrast */
+        }
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+        }
+        .agent-card {
+            background-color: rgba(255, 255, 255, 0.4); /* Translucent card background */
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.8); /* Light, subtle border */
+        }
+        /* Uses CSS variable set in JS for dynamic border color on hover */
+        .agent-card:hover {
+            transform: translateY(-5px);
+            /* Stronger shadow and a color-matched border for focus */
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 0 0 2px var(--agent-color); 
+            border-color: var(--agent-color); 
+            background-color: rgba(255, 255, 255, 0.7); /* Slightly less translucent on hover */
+        }
+        .agent-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            /* Style for Greek letters to ensure they look good */
+            font-family: serif; 
+            font-weight: 700;
+        }
+        .agent-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .agent-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+
+        /*
+         * Chat App Styles
+         */
+        #chat-app-container {
+            display: none; /* Managed by router */
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 767px) {
+            #chat-app-container {
+                flex-direction: column;
             }
         }
+        
         .sidebar {
             width: 100%;
-            background-color: #f9fafb;
+            background-color: rgba(255, 255, 255, 0.3); /* Translucent background */
             color: #1f2937;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
             padding: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5); /* Light border */
         }
         @media (min-width: 768px) {
             .sidebar {
                 width: 20rem;
                 border-bottom: 0;
-                border-right: 1px solid #e5e7eb;
+                border-right: 1px solid rgba(255, 255, 255, 0.5); /* Light border */
             }
         }
+        /* Sidebar header and buttons remain mostly opaque for readability */
         .sidebar-header {
             display: flex;
             align-items: center;
@@ -96,7 +201,7 @@
         .sidebar-section h2 {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #6b7280;
+            color: #4b5563; /* Slightly darker gray for readability */
             text-transform: uppercase;
             margin-bottom: 0.5rem;
         }
@@ -110,8 +215,14 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
+        /* Highlight selected chat item */
+        .sidebar-section ul li.selected {
+            background-color: rgba(255, 255, 255, 0.7); /* More opaque white for selection */
+            font-weight: 500;
+            border-left: 3px solid #3b82f6;
+        }
         .sidebar-section ul li:hover {
-            background-color: #e5e7eb;
+            background-color: rgba(255, 255, 255, 0.5); /* Slightly less translucent on hover */
         }
         .sidebar-section ul li .chat-info {
             display: flex;
@@ -208,15 +319,12 @@
             font-weight: 700;
             font-size: 0.75rem;
             flex-shrink: 0;
+            color: #ffffff;
         }
         .user-avatar {
-            background-color: #6b7280;
-            color: #ffffff;
+            background-color: #6b7280; /* User: Neutral Gray */
         }
-        .ai-avatar {
-            background-color: #3b82f6;
-            color: #ffffff;
-        }
+
         .message-content {
             display: flex;
             flex-direction: column;
@@ -231,33 +339,30 @@
         .message-bubble {
             padding: 1.25rem;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            white-space: pre-wrap; /* Ensure line breaks are respected */
         }
+        
+        /* Updated: Defined rounded corner speech bubble shape for the user (right-aligned, tail on bottom-right) */
         .user-message-bubble {
-            background-color: #e5e7eb;
+            /* Translucent white/gray for the user bubble */
+            background-color: rgba(180, 180, 180, 0.1); 
             color: #1f2937;
-            border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
+            border-radius: 1.5rem 1.5rem 0.5rem 1.5rem; /* TL, TR, BR(tail), BL */
+            border: 1px solid rgba(0, 0, 0, 0.05); /* Subtle border for glass definition */
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
+        
+        /* NEW: Defined rounded corner speech bubble shape for the AI (left-aligned, tail on bottom-left) */
         .ai-message-bubble {
-            background-color: #dbeafe;
-            color: #1e40af;
-            border-radius: 1.5rem 1.5rem 1.5rem 0.5rem;
+            border-radius: 1.5rem 1.5rem 1.5rem 0.5rem; /* TL, TR, BR, BL(tail) */
         }
-        .regenerate-btn {
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #6b7280;
-            font-weight: 500;
-            transition: color 0.2s ease;
-        }
-        .regenerate-btn:hover {
-            color: #3b82f6;
-        }
+        
         .input-area {
             padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb;
-            background-color: #ffffff;
+            /* Use a very light, almost invisible border */
+            border-top: 1px solid rgba(255, 255, 255, 0.5); 
+            background-color: transparent; /* Ensure input area is transparent */
         }
         .input-wrapper {
             position: relative;
@@ -272,6 +377,9 @@
             outline: none;
             font-size: 1.125rem;
             color: #1f2937;
+            /* Translucent input field with light inner border */
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
             transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
         #user-input:focus {
@@ -348,155 +456,306 @@
             60%, 100% { box-shadow: 10014px 0 0 -5px; }
         }
     </style>
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 </head>
 <body>
 
-    <!-- Main Container -->
+    <!-- Main Container - Holds either the Homepage or the Chat App -->
     <div class="main-container">
 
-        <!-- Sidebar (Left Column) -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                <span>NovaAI</span>
+        <!-- Home Page Container -->
+        <div id="homepage-container">
+            <div class="home-header">
+                <h1>Welcome to NovaAI</h1>
+                <p>Select a specialized assistant to begin your conversation.</p>
             </div>
 
-            <button class="new-chat-btn" id="new-chat-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-                <span>New chat</span>
-            </button>
+            <div id="agent-grid" class="agent-grid">
+                <!-- Agent Cards will be injected here by JavaScript -->
+            </div>
+        </div>
 
-            <div id="chat-history" class="flex-grow chat-window overflow-y-auto pr-2 hidden md:block">
-                <div class="sidebar-section">
-                    <h2>Chats</h2>
-                    <ul id="chat-list">
-                        <!-- Chat history items will be added here dynamically -->
-                    </ul>
+
+        <!-- Chat App Container (Existing UI) -->
+        <div id="chat-app-container">
+            <!-- Sidebar (Left Column) -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <!-- Icon for AI -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span>NovaAI</span>
                 </div>
-            </div>
-        </aside>
 
-        <!-- Main Chat Area (Right Column) -->
-        <main class="chat-area">
-            <!-- Header for Main Chat Area -->
-            <header class="chat-header">
-                <h2 id="chat-title">New chat</h2>
-            </header>
+                <button class="new-chat-btn" id="new-chat-btn">
+                    <!-- Icon for New Chat -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                    <span>New chat</span>
+                </button>
+                
+                <!-- This button uses the new navigate function -->
+                <button class="new-chat-btn" id="go-home-btn" style="background: #6b7280; margin-top: 1rem;">
+                    <!-- Icon for Home -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span>Select New Agent</span>
+                </button>
 
-            <!-- Chat Window -->
-            <div id="chat-container" class="chat-window">
-                <!-- Initial AI message -->
-                <div class="message-row ai">
-                     <div class="avatar ai-avatar">AI</div>
-                     <div class="message-content">
-                        <span class="message-sender">NovaAI</span>
-                        <div class="message-bubble ai-message-bubble">
-                            Hello! How can I help you today?
-                        </div>
-                     </div>
+                <div id="chat-history" class="flex-grow chat-window overflow-y-auto pr-2 hidden md:block" style="margin-top: 2rem;">
+                    <div class="sidebar-section">
+                        <h2>Chats</h2>
+                        <ul id="chat-list">
+                            <!-- Chat history items will be added here dynamically -->
+                        </ul>
+                    </div>
                 </div>
-            </div>
+            </aside>
 
-            <!-- Input Area -->
-            <div class="input-area">
-                <div class="input-wrapper">
-                    <input type="text" id="user-input" placeholder="Send your message">
-                    <button id="send-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                    </button>
+            <!-- Main Chat Area (Right Column) -->
+            <main class="chat-area">
+                <!-- Header for Main Chat Area -->
+                <header class="chat-header">
+                    <h2 id="chat-title">New chat</h2>
+                </header>
+
+                <!-- Chat Window -->
+                <div id="chat-container" class="chat-window">
+                    <!-- Messages go here -->
                 </div>
-            </div>
-        </main>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="user-input" placeholder="Send your message">
+                        <button id="send-btn">
+                            <!-- Send Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
 
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Configuration ---
+            // AGENTS configuration with colors and individual webhook URLs
+            const AGENTS = [
+                // Emerald Green (Growth/Sales)
+                { 
+                    id: 'leadgen', 
+                    name: 'Lead Gen Agent', 
+                    description: 'Specialized in generating qualified leads, prospecting, and sales outreach strategies.', 
+                    icon: '\u03B1', 
+                    color: '#10b981',
+                    webhookUrl: 'https://kmandal.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat'
+                }, 
+                // Indigo Purple (Tech/Reliability)
+                { 
+                    id: 'itsupport', 
+                    name: 'IT Support Agent', 
+                    description: 'Provides technical troubleshooting, network setup help, and common software solutions.', 
+                    icon: '\u03A3', 
+                    color: '#6366f1',
+                    webhookUrl: 'https://kmandal.app.n8n.cloud/webhook/d349302e-debb-4bfb-92dd-441936125455/chat'
+                } 
+            ];
+            
+            // Helper to find agent by ID
+            const getAgentById = (id) => AGENTS.find(a => a.id === id);
+
+            // --- DOM Elements ---
+            const homepageContainer = document.getElementById('homepage-container');
+            const chatAppContainer = document.getElementById('chat-app-container');
+            const agentGrid = document.getElementById('agent-grid');
             const chatContainer = document.getElementById('chat-container');
             const userInput = document.getElementById('user-input');
             const sendBtn = document.getElementById('send-btn');
             const chatList = document.getElementById('chat-list');
             const chatTitle = document.getElementById('chat-title');
             const newChatBtn = document.getElementById('new-chat-btn');
-            const CHAT_URL = "https://kmandal.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat";
-            const chatHistory = {};
-            let currentChatId = null;
+            const goHomeBtn = document.getElementById('go-home-btn');
 
+            // --- State Management ---
+            const chatHistory = {}; 
+            let currentChatId = null;
+            let currentAgent = null;
+
+            // --- ROUTING LOGIC (Hash Routing) ---
+
+            // Changes the URL hash and triggers the router
+            function navigate(path) {
+                // We use window.location.hash for routing compatibility in iframe environments
+                window.location.hash = path;
+                // handleRoute is also called synchronously for immediate UI updates
+                handleRoute(); 
+            }
+
+            // Central function to determine which view to show based on the URL hash
+            function handleRoute() {
+                // Read the hash, removing the leading '#'
+                let path = window.location.hash.substring(1); 
+                
+                // If path is empty (just # or no hash), normalize it to '/'
+                if (path === '') {
+                    path = '/';
+                }
+
+                // Hide all views first
+                homepageContainer.style.display = 'none';
+                chatAppContainer.style.display = 'none';
+
+                if (path === '/') {
+                    // Home Route
+                    homepageContainer.style.display = 'flex';
+                    currentAgent = null;
+                    document.title = "NovaAI Agent Chat";
+                } else if (path.startsWith('/chat/')) {
+                    // Chat Route: /chat/{agentId}
+                    const agentId = path.split('/')[2];
+                    const agent = getAgentById(agentId);
+
+                    if (agent) {
+                        currentAgent = agent;
+                        chatAppContainer.style.display = 'flex';
+                        document.title = `NovaAI: ${agent.name}`;
+                        
+                        // If we already have a chat open for this agent, select it, otherwise create a new one
+                        const lastChatId = Object.keys(chatHistory).filter(id => id.startsWith(agent.id)).pop();
+                        
+                        if (lastChatId) {
+                            selectChat(lastChatId);
+                        } else {
+                            createNewChat();
+                        }
+                    } else {
+                        // If agent ID is invalid, redirect to home
+                        navigate('/'); 
+                    }
+                } else {
+                    // 404/Fallback: redirect to home
+                    navigate('/');
+                }
+            }
+
+            // Listener for browser back/forward buttons when using hash routing
+            window.onhashchange = handleRoute;
+
+            // --- Chat & Agent Management ---
+            
+            // Renders the agent cards on the homepage
+            function renderAgentGrid() {
+                agentGrid.innerHTML = '';
+                AGENTS.forEach(agent => {
+                    const card = document.createElement('div');
+                    card.className = 'agent-card';
+                    // Set CSS variable for hover effect
+                    card.style.setProperty('--agent-color', agent.color); 
+                    // Now, clicking a card uses navigate()
+                    card.onclick = () => navigate('/chat/' + agent.id); 
+                    
+                    const iconText = agent.icon;
+
+                    // Set dynamic colors for the icon
+                    card.innerHTML = `
+                        <div class="agent-icon" style="background-color: ${agent.color}1A; color: ${agent.color};">${iconText}</div>
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-description">${agent.description}</div>
+                    `;
+                    agentGrid.appendChild(card);
+                });
+            }
+
+            // Initializes a new chat session
             function createNewChat() {
-                const newChatId = "chat-" + Date.now();
+                const newChatId = `${currentAgent.id}-${Date.now()}`;
                 chatHistory[newChatId] = [];
                 currentChatId = newChatId;
+                
+                const initialMessage = `Hello! I'm your **${currentAgent.name}** assistant. How can I help you?`;
+                
                 updateChatTitle("New chat");
-                renderChatMessages();
+                renderChatMessages(); // Clears previous chat
+                addMessageToDOM(initialMessage, 'ai', true); // Add initial AI message and history
                 updateChatList();
             }
 
-            // Function to delete a chat
             function deleteChat(chatId) {
-                // Remove chat from history
                 delete chatHistory[chatId];
                 
-                // If the deleted chat was the current one, switch to a new chat
                 if (currentChatId === chatId) {
-                    const remainingChatIds = Object.keys(chatHistory);
+                    const remainingChatIds = Object.keys(chatHistory).filter(id => id.startsWith(currentAgent.id));
                     if (remainingChatIds.length > 0) {
                         selectChat(remainingChatIds[0]);
                     } else {
+                        // If no more chats for this agent, create a new one
                         createNewChat();
                     }
                 }
                 
-                // Update the UI
                 updateChatList();
             }
 
             function updateChatList() {
                 chatList.innerHTML = '';
-                for (const chatId in chatHistory) {
+                // Filter chats only for the currently selected agent type
+                const agentChats = Object.keys(chatHistory).filter(id => id.startsWith(currentAgent.id));
+
+                agentChats.forEach(chatId => {
+                    const chatMessages = chatHistory[chatId];
                     const chatItem = document.createElement('li');
                     
-                    // Create chat information container
+                    // Highlight the currently selected chat
+                    if (chatId === currentChatId) {
+                        chatItem.classList.add('selected');
+                        // Use agent color for border on selected chat
+                        chatItem.style.borderLeftColor = currentAgent.color; 
+                    }
+
                     const chatInfo = document.createElement('div');
                     chatInfo.className = 'chat-info';
+                    // Skip the initial AI message (index 0) when previewing
+                    const previewText = chatMessages.length > 1 ? chatMessages[1].text.substring(0, 20) + '...' : `New ${currentAgent.name} Chat`;
+                    
                     chatInfo.innerHTML = `
+                        <!-- Icon for chat list item -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>
-                        <span>${chatHistory[chatId][0] ? chatHistory[chatId][0].text.substring(0, 20) + '...' : 'New chat'}</span>
+                        <span>${previewText}</span>
                     `;
                     chatInfo.onclick = () => selectChat(chatId);
                     
-                    // Create delete button
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-btn';
                     deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5.755 20.283L4 18.526 7.284 12 4 5.474 5.755 3.717 12 10.43l6.245-6.713L20 5.474 16.716 12 20 18.526 18.245 20.283 12 13.57zm-.008-16.143l12.253 12.253 1.763-1.764-12.253-12.253-1.763 1.764z"/></svg>`;
                     deleteBtn.onclick = (event) => {
-                        event.stopPropagation(); // Prevents chat selection
+                        event.stopPropagation();
                         deleteChat(chatId);
                     };
 
                     chatItem.appendChild(chatInfo);
                     chatItem.appendChild(deleteBtn);
                     chatList.appendChild(chatItem);
-                }
+                });
             }
 
             function selectChat(chatId) {
                 currentChatId = chatId;
                 const chatMessages = chatHistory[chatId];
-                updateChatTitle(chatMessages[0] ? chatMessages[0].text.substring(0, 20) + '...' : 'New chat');
+                // Handle case where chat history is empty or only has initial message
+                const previewText = chatMessages.length > 1 ? chatMessages[1].text.substring(0, 20) + '...' : `${currentAgent.name} Chat`;
+                updateChatTitle(previewText);
                 renderChatMessages();
+                updateChatList(); // Update list to highlight selected chat
             }
 
             function renderChatMessages() {
                 chatContainer.innerHTML = '';
                 const messages = chatHistory[currentChatId];
-                if (!messages || messages.length === 0) {
-                     addMessageToDOM("Hello! How can I help you today?", 'ai');
-                     return;
+                if (messages && messages.length > 0) {
+                    messages.forEach(msg => {
+                        // Pass false to updateHistory because messages are already in history
+                        addMessageToDOM(msg.text, msg.sender, false); 
+                    });
                 }
-                messages.forEach(msg => {
-                    addMessageToDOM(msg.text, msg.sender);
-                });
             }
 
             function addMessageToChatHistory(text, sender) {
@@ -504,50 +763,89 @@
             }
 
             function updateChatTitle(newTitle) {
-                chatTitle.textContent = newTitle;
+                chatTitle.textContent = `${currentAgent.name}: ${newTitle}`;
             }
 
             // Function to add a message to the chat
-            function addMessageToDOM(text, sender) {
+            function addMessageToDOM(text, sender, updateHistory = true) {
                 const messageWrapper = document.createElement('div');
                 messageWrapper.className = `message-row ${sender === 'user' ? 'user' : 'ai'}`;
                 
                 const avatar = document.createElement('div');
-                avatar.className = `avatar ${sender === 'user' ? 'user-avatar' : 'ai-avatar'}`;
-                avatar.textContent = sender === 'user' ? "U" : "AI";
-                messageWrapper.appendChild(avatar);
-
+                const messageBubble = document.createElement('div');
                 const messageContent = document.createElement('div');
                 messageContent.className = "message-content";
 
-                if (sender === 'ai') {
+                if (sender === 'ai' && currentAgent) {
+                    // AI messages use the agent's unique color and light border for glass effect
+                    const agentColor = currentAgent.color;
+                    
+                    avatar.className = 'avatar ai-avatar';
+                    avatar.textContent = currentAgent.icon; // Use the Greek letter icon
+                    avatar.style.backgroundColor = agentColor; // Saturated color for avatar
+                    
+                    messageBubble.className = 'message-bubble ai-message-bubble';
+                    messageBubble.style.backgroundColor = `${agentColor}1A`; // Light background (1A is ~10% opacity)
+                    messageBubble.style.color = agentColor; // Darker text color (matching agent color)
+                    messageBubble.style.border = `1px solid ${agentColor}4D`; // Light border for definition
+                    // ADDED: Backdrop filter for glass effect on AI bubble
+                    messageBubble.style.backdropFilter = `blur(5px)`;
+                    messageBubble.style.webkitBackdropFilter = `blur(5px)`;
+
                     const aiName = document.createElement('span');
                     aiName.className = "message-sender";
-                    aiName.textContent = "NovaAI";
+                    aiName.textContent = currentAgent.name; // Show agent's full name
                     messageContent.appendChild(aiName);
+
+                } else {
+                    // User messages
+                    avatar.className = 'avatar user-avatar';
+                    avatar.textContent = "U";
+                    messageBubble.className = 'message-bubble user-message-bubble';
                 }
                 
-                const messageBubble = document.createElement('div');
-                messageBubble.className = `message-bubble ${sender === 'user' ? 'user-message-bubble' : 'ai-message-bubble'}`;
+                // Determine if we should show the avatar on the user message (we only show it on the AI message)
+                if (sender === 'ai') {
+                    messageWrapper.appendChild(avatar);
+                }
+
                 messageBubble.textContent = text;
-                
                 messageContent.appendChild(messageBubble);
+
+                // Order content correctly (AI: Avatar -> Content, User: Content)
                 messageWrapper.appendChild(messageContent);
+                
                 chatContainer.appendChild(messageWrapper);
+                
+                if (updateHistory) {
+                    addMessageToChatHistory(text, sender);
+                }
 
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
 
             // Function to simulate AI typing
             function showTypingIndicator() {
+                if (!currentAgent) return;
                 const typingWrapper = document.createElement('div');
                 typingWrapper.id = 'typing-indicator';
                 typingWrapper.className = 'message-row ai';
+                
+                // Use agent color for typing indicator (same color logic as message bubble)
+                const agentColor = currentAgent.color;
+
+                // Ensure typing indicator bubble also gets the glass effect and correct shape
                 typingWrapper.innerHTML = `
-                    <div class="avatar ai-avatar">AI</div>
+                    <div class="avatar ai-avatar" style="background-color: ${agentColor};">${currentAgent.icon}</div>
                     <div class="message-content">
-                        <span class="message-sender">NovaAI</span>
-                        <div class="message-bubble ai-message-bubble">
+                        <span class="message-sender">${currentAgent.name}</span>
+                        <div class="message-bubble ai-message-bubble" style="
+                            background-color: ${agentColor}1A; 
+                            color: ${agentColor}; 
+                            border: 1px solid ${agentColor}4D;
+                            backdrop-filter: blur(5px); 
+                            -webkit-backdrop-filter: blur(5px);
+                        ">
                             <div class="dot-pulse"></div>
                         </div>
                     </div>
@@ -568,19 +866,24 @@
                 const message = userInput.value.trim();
                 if (message === '') return;
                 
-                addMessageToDOM(message, 'user');
-                addMessageToChatHistory(message, 'user');
+                // Add user message to DOM and history
+                addMessageToDOM(message, 'user', true);
                 userInput.value = '';
 
                 showTypingIndicator();
 
                 try {
-                    const res = await fetch(CHAT_URL, {
+                    // Use the current agent's specific webhook URL
+                    const agentWebhookUrl = currentAgent.webhookUrl;
+                    
+                    // Send the message and the current agent ID for context
+                    const res = await fetch(agentWebhookUrl, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             chatInput: message,
-                            sessionId: currentChatId
+                            sessionId: currentChatId,
+                            agentId: currentAgent.id 
                         })
                     });
                     
@@ -589,42 +892,42 @@
                     let botReply = data.text || data.message || data.output || (typeof data === "string" ? data : JSON.stringify(data));
 
                     hideTypingIndicator();
-                    addMessageToDOM(botReply, 'ai');
-                    addMessageToChatHistory(botReply, 'ai');
+                    addMessageToDOM(botReply, 'ai', true);
                     
-                    // Update the chat list to reflect the new chat's title
-                    updateChatList();
+                    // Update the chat title after the first user message
+                    if (chatHistory[currentChatId].length === 3) {
+                        updateChatTitle(message.substring(0, 20) + '...');
+                        updateChatList();
+                    }
 
                 } catch (err) {
                     hideTypingIndicator();
-                    addMessageToDOM('Uh oh... an error occurred while talking to the AI agent. Please try again.', 'ai');
-                    addMessageToChatHistory('Uh oh... an error occurred while talking to the AI agent. Please try again.', 'ai');
+                    console.error("Chat API Error:", err);
+                    const errorMsg = 'Uh oh... an error occurred while talking to the AI agent. Please check the console or the webhook connection.';
+                    addMessageToDOM(errorMsg, 'ai', true);
                 }
             }
 
-            // Event listener for the send button
+            // --- Event Listeners ---
             sendBtn.addEventListener('click', sendMessage);
 
-            // Event listener for the Enter key on the input field
             userInput.addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
                     sendMessage();
                 }
             });
 
-            // Event listener for the "New chat" button
-            newChatBtn.addEventListener('click', createNewChat);
+            newChatBtn.addEventListener('click', () => createNewChat());
+            
+            // Go Home button now uses the navigate function
+            goHomeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigate('/');
+            });
 
-            // Initial setup
-            createNewChat();
-        });
-    </script>
-
-    <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-        createChat({
-            webhookUrl: 'https://kmandal.app.n8n.cloud/webhook/d349302e-debb-4bfb-92dd-441936125455/chat'
+            // --- Initial Application Setup ---
+            renderAgentGrid(); // Render the homepage content
+            handleRoute();    // Initial route check (handles hash/first load)
         });
     </script>
 </body>
