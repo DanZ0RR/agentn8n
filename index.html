@@ -6,17 +6,23 @@
     <title>NovaAI Agent Chat</title>
     <style>
         /*
-         * Global Styles & Inter Font
+         * Global Styles & Font Imports
          */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        /* Quicksand for the entire app: clean, slim, and elegant */
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
         
         /* Dynamic Orange/White Background */
         body {
-            font-family: 'Inter', sans-serif;
-            /* Dynamic background using a large gradient that moves */
+            /* New Font: Quicksand applied everywhere */
+            font-family: 'Quicksand', sans-serif;
+            /* SLIM FONT WEIGHT: Using 400 as the default slim weight */
+            font-weight: 400; 
+            
+            /* DYNAMIC BACKGROUND: White and Orange shifting gradient */
             background: linear-gradient(-45deg, #ffffff, #fff7e6, #ffedd5); 
-            background-size: 400% 400%;
-            animation: colorFlow 15s ease infinite;
+            background-size: 400% 400%; /* Makes the gradient huge */
+            animation: colorFlow 15s ease infinite; /* Smooth, continuous shifting */
+
             display: flex;
             align-items: center;
             justify-content: center;
@@ -24,6 +30,7 @@
             padding: 1rem;
         }
         
+        /* Keyframe animation to shift the large background across the screen */
         @keyframes colorFlow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -63,12 +70,42 @@
         .home-header {
             margin-bottom: 3rem;
         }
+        
+        /* --- Title Styling and Animation --- */
         .home-header h1 {
-            font-size: 3rem;
-            font-weight: 700;
+            /* NEW FONT: Quicksand for a modern, slim, and symmetrical look */
+            font-family: 'Quicksand', sans-serif;
+            font-size: 5rem; 
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500; 
             color: #1f2937;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem; 
+            
+            /* Animation for smooth entrance: Scale In */
+            animation: scaleIn 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            transform: scale(1.05); /* Initial scale (overridden by keyframes, but good fallback) */
+            opacity: 0; /* Start invisible */
         }
+        
+        @keyframes scaleIn {
+            0% { 
+                transform: scale(1.05);
+                opacity: 0;
+                filter: blur(5px);
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .home-header h1 {
+                font-size: 3rem; /* Adjust for mobile screens */
+            }
+        }
+        
         .home-header p {
             font-size: 1.125rem;
             color: #4b5563; /* Slightly darker for contrast */
@@ -105,12 +142,14 @@
             padding: 0.5rem;
             border-radius: 0.75rem;
             /* Style for Greek letters to ensure they look good */
-            font-family: serif; 
-            font-weight: 700;
+            font-family: 'Quicksand', sans-serif; 
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
         }
         .agent-name {
             font-size: 1.25rem;
-            font-weight: 600;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
             color: #1f2937;
             margin-bottom: 0.5rem;
         }
@@ -167,7 +206,8 @@
         }
         .sidebar-header span {
             font-size: 1.5rem;
-            font-weight: 600;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
         }
         .new-chat-btn {
             display: flex;
@@ -177,7 +217,8 @@
             color: #ffffff;
             padding: 0.75rem 1rem;
             border-radius: 9999px;
-            font-weight: 500;
+            /* SLIM WEIGHT: Using 400 */
+            font-weight: 400;
             margin-bottom: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
@@ -200,7 +241,8 @@
         }
         .sidebar-section h2 {
             font-size: 0.875rem;
-            font-weight: 600;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
             color: #4b5563; /* Slightly darker gray for readability */
             text-transform: uppercase;
             margin-bottom: 0.5rem;
@@ -218,7 +260,8 @@
         /* Highlight selected chat item */
         .sidebar-section ul li.selected {
             background-color: rgba(255, 255, 255, 0.7); /* More opaque white for selection */
-            font-weight: 500;
+            /* SLIM WEIGHT: Using 400 */
+            font-weight: 400;
             border-left: 3px solid #3b82f6;
         }
         .sidebar-section ul li:hover {
@@ -271,7 +314,8 @@
         }
         .chat-header h2 {
             font-size: 1.25rem;
-            font-weight: 600;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
             color: #1f2937;
         }
         .chat-window {
@@ -316,7 +360,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
             font-size: 0.75rem;
             flex-shrink: 0;
             color: #ffffff;
@@ -333,7 +378,8 @@
         }
         .message-sender {
             font-size: 0.875rem;
-            font-weight: 600;
+            /* SLIM WEIGHT: Using 500 */
+            font-weight: 500;
             color: #1f2937;
         }
         .message-bubble {
@@ -342,7 +388,7 @@
             white-space: pre-wrap; /* Ensure line breaks are respected */
         }
         
-        /* Updated: Defined rounded corner speech bubble shape for the user (right-aligned, tail on bottom-right) */
+        /* User Bubble: Right-aligned, tail on bottom-right */
         .user-message-bubble {
             /* Translucent white/gray for the user bubble */
             background-color: rgba(180, 180, 180, 0.1); 
@@ -353,7 +399,7 @@
             -webkit-backdrop-filter: blur(5px);
         }
         
-        /* NEW: Defined rounded corner speech bubble shape for the AI (left-aligned, tail on bottom-left) */
+        /* AI Bubble: Left-aligned, tail on bottom-left */
         .ai-message-bubble {
             border-radius: 1.5rem 1.5rem 1.5rem 0.5rem; /* TL, TR, BR, BL(tail) */
         }
