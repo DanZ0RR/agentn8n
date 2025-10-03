@@ -589,9 +589,10 @@
                 // Emerald Green (Growth/Sales)
                 { 
                     id: 'leadgen', 
-                    name: 'Lead Gen Agent', 
+                    name: 'Assist Agent', 
                     description: 'Specialized in generating qualified leads, prospecting, and sales outreach strategies.', 
-                    icon: '\u03B1', 
+                    // image filename you said you have — place it under assets/agents/
+                    icon: 'assets/agents/icons8-online-support-48.png', 
                     color: '#10b981',
                     webhookUrl: 'https://kmandal.app.n8n.cloud/webhook/e5616171-e3b5-4c39-81d4-67409f9fa60a/chat'
                 }, 
@@ -600,7 +601,8 @@
                     id: 'itsupport', 
                     name: 'IT Support Agent', 
                     description: 'Provides technical troubleshooting, network setup help, and common software solutions.', 
-                    icon: '\u03A3', 
+                    // image filename you said you have — place it under assets/agents/
+                    icon: 'assets/agents/icons8-it-64.png', 
                     color: '#6366f1',
                     webhookUrl: 'https://kmandal.app.n8n.cloud/webhook/d349302e-debb-4bfb-92dd-441936125455/chat'
                 } 
@@ -698,12 +700,23 @@
                     card.style.setProperty('--agent-color', agent.color); 
                     // Now, clicking a card uses navigate()
                     card.onclick = () => navigate('/chat/' + agent.id); 
-                    
-                    const iconText = agent.icon;
 
-                    // Set dynamic colors for the icon
+                    // Determine whether agent.icon is an image (ends with common image extensions)
+                    const isImage = /\.(png|jpe?g|webp|gif|svg)$/i.test(agent.icon);
+
+                    let iconHtml = '';
+                    if (isImage) {
+                        iconHtml = `<div class="agent-icon" style="background-color: ${agent.color}1A;
+                                        display:flex; align-items:center; justify-content:center;">
+                                        <img src="${agent.icon}" alt="${agent.name}" class="w-12 h-12 rounded-md object-cover">
+                                    </div>`;
+                    } else {
+                        // fallback to text/icon glyphs
+                        iconHtml = `<div class="agent-icon" style="background-color: ${agent.color}1A; color: ${agent.color};">${agent.icon}</div>`;
+                    }
+
                     card.innerHTML = `
-                        <div class="agent-icon" style="background-color: ${agent.color}1A; color: ${agent.color};">${iconText}</div>
+                        ${iconHtml}
                         <div class="agent-name">${agent.name}</div>
                         <div class="agent-description">${agent.description}</div>
                     `;
@@ -827,8 +840,22 @@
                     const agentColor = currentAgent.color;
                     
                     avatar.className = 'avatar ai-avatar';
-                    avatar.textContent = currentAgent.icon; // Use the Greek letter icon
-                    avatar.style.backgroundColor = agentColor; // Saturated color for avatar
+                    // If the agent.icon is an image path, render an <img> inside the avatar
+                    const isImage = /\.(png|jpe?g|webp|gif|svg)$/i.test(currentAgent.icon);
+                    if (isImage) {
+                        avatar.style.backgroundColor = 'transparent';
+                        const img = document.createElement('img');
+                        img.src = currentAgent.icon;
+                        img.alt = currentAgent.name;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '9999px';
+                        avatar.appendChild(img);
+                    } else {
+                        avatar.textContent = currentAgent.icon; // Use the glyph icon
+                        avatar.style.backgroundColor = agentColor; // Saturated color for avatar
+                    }
                     
                     messageBubble.className = 'message-bubble ai-message-bubble';
                     messageBubble.style.backgroundColor = `${agentColor}1A`; // Light background (1A is ~10% opacity)
@@ -881,8 +908,14 @@
                 const agentColor = currentAgent.color;
 
                 // Ensure typing indicator bubble also gets the glass effect and correct shape
+                // Build typing indicator content; if the agent icon is an image use it, otherwise use the glyph
+                const isImageIcon = /\.(png|jpe?g|webp|gif|svg)$/i.test(currentAgent.icon);
+                const avatarHtml = isImageIcon
+                    ? `<div class="avatar ai-avatar" style="background-color: transparent;"><img src="${currentAgent.icon}" alt="${currentAgent.name}" style="width:100%;height:100%;object-fit:cover;border-radius:9999px;"></div>`
+                    : `<div class="avatar ai-avatar" style="background-color: ${agentColor};">${currentAgent.icon}</div>`;
+
                 typingWrapper.innerHTML = `
-                    <div class="avatar ai-avatar" style="background-color: ${agentColor};">${currentAgent.icon}</div>
+                    ${avatarHtml}
                     <div class="message-content">
                         <span class="message-sender">${currentAgent.name}</span>
                         <div class="message-bubble ai-message-bubble" style="
