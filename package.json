@@ -1,0 +1,13 @@
+{
+  "name": "agentn8n-tools",
+  "version": "1.0.0",
+  "description": "Utility scripts for the NovaAI project (image resizing)",
+  "private": true,
+  "scripts": {
+    "resize-images": "node ./tools/resize-images.js"
+  },
+  "dependencies": {
+    "sharp": "^0.32.0",
+    "glob": "^10.2.7"
+  }
+}

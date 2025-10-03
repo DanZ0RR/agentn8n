@@ -136,15 +136,28 @@
             background-color: rgba(255, 255, 255, 0.7); /* Slightly less translucent on hover */
         }
         .agent-icon {
-            font-size: 2.5rem;
+            /* Force a consistent icon box so images and glyphs align */
+            width: 64px;
+            height: 64px;
             margin-bottom: 1rem;
-            display: inline-block;
-            padding: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
             border-radius: 0.75rem;
-            /* Style for Greek letters to ensure they look good */
+            overflow: hidden;
+            /* Style for glyph fallback */
             font-family: 'Quicksand', sans-serif; 
-            /* SLIM WEIGHT: Using 500 */
             font-weight: 500;
+            font-size: 1.25rem;
+        }
+
+        /* Ensure agent icon images are cropped/scaled to 64x64 */
+        .agent-icon img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            display: block;
         }
         .agent-name {
             font-size: 1.25rem;
@@ -354,17 +367,25 @@
             gap: 1rem;
         }
         .avatar {
-            width: 2rem;
-            height: 2rem;
+            width: 64px;
+            height: 64px;
             border-radius: 9999px;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* SLIM WEIGHT: Using 500 */
             font-weight: 500;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             flex-shrink: 0;
             color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Avatar image sizing */
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
         .user-avatar {
             background-color: #6b7280; /* User: Neutral Gray */
@@ -590,7 +611,7 @@
                 { 
                     id: 'leadgen', 
                     name: 'Assist Agent', 
-                    description: 'Specialized in generating qualified leads, prospecting, and sales outreach strategies.', 
+                    description: 'Specialized in welcoming customers, answering general questions, and connecting them with the right team for product details or follow-ups.', 
                     // image filename you said you have — place it under assets/agents/
                     icon: 'assets/agents/icons8-online-support-48.png', 
                     color: '#10b981',
